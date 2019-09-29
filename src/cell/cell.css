@@ -1,0 +1,17 @@
+.dot {
+  height: 50px;
+  width: 50px;
+  background-color: #bbb;
+  border-radius: 50%;
+  color: red;
+  text-align: center;
+  line-height: 50px;
+}
+
+.green {
+  background-color: #198019;
+}
+
+.blue {
+  background-color: #191b80;
+}

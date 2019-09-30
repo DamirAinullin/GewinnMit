@@ -19,9 +19,9 @@ function Game(props) {
     }
     const numbers = [0, 1, 2, 3, 4, 5, 6];
     return <div>
-        <p>{props.location.state.players[0].Name}</p>
+        <p>{props.location.state.players[0].name}</p>
         vs
-        <p>{props.location.state.players[1].Name}</p>
+        <p>{props.location.state.players[1].name}</p>
         <Field field={field} player={player} numbers={numbers} onColumnClick={move} />
     </div>;
 
@@ -39,38 +39,29 @@ function Game(props) {
     }
 
     function isGameOver(field, player) {
-        let horiz = 0;
-        let vertic = 0;
-        let prevHoriz = -1;
-        let prevVertic = -1;
+        let horizontalItems = 0;
+        let verticalItems = 0;
         let current = -1;
         for (let i = 0; i < field.length; i++) {
             for (let j = 0; j < field[i].length; j++) {
-                if (prevVertic === -1) {
-                    prevVertic = field[i][j];
-                }
                 current = field[i][j];
-                vertic = current === player ? (vertic + 1) : 0;
-                if (vertic === 4) {
+                verticalItems = current === player ? (verticalItems + 1) : 0;
+                if (verticalItems === 4) {
                     goToGameOverScreen(player);
                 }
-                prevVertic = field[i][j];
             }
         }
 
         for (let j = 0; j < field[0].length; j++) {
             for (let i = 0; i < field.length; i++) {
-                if (prevHoriz === -1) {
-                    prevHoriz = field[i][j];
-                }
                 current = field[i][j];
-                horiz = current === player ? (horiz + 1) : 0;
-                if (horiz === 4) {
+                horizontalItems = current === player ? (horizontalItems + 1) : 0;
+                if (horizontalItems === 4) {
                     goToGameOverScreen(player);
                 }
-                prevHoriz = field[i][j];
             }
         }
+
         for (let i = 0; i < field.length; i++) {
             for (let j = 0; j < field[i].length; j++) {
                 if (field[i][j] === 0) {
@@ -82,10 +73,12 @@ function Game(props) {
     }
 
     function goToGameOverScreen(player) {
-        props.history.push({
-            pathname: "/gameOverScreen",
-            state: { player: getPlayer(player) }
-        });
+        setTimeout(function () {
+            props.history.push({
+                pathname: "/gameOverScreen",
+                state: { player: getPlayer(player) }
+            });
+          }, 500);
     }
 
     function getPlayer(id) {

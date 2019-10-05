@@ -35,41 +35,18 @@ function Game(props) {
         newField[columnID][index] = player;
         setField(newField);
         setPlayer(player === 1 ? 2 : 1);
-        isGameOver(newField, player);
+        isGameOver(newField, player, columnID, index);
     }
 
-    function isGameOver(field, player) {
-        let horizontalItems = 0;
-        let verticalItems = 0;
-        let current = -1;
-        for (let i = 0; i < field.length; i++) {
-            for (let j = 0; j < field[i].length; j++) {
-                current = field[i][j];
-                verticalItems = current === player ? (verticalItems + 1) : 0;
-                if (verticalItems === 4) {
-                    goToGameOverScreen(player);
-                }
-            }
+    function isGameOver(field, player, x, y) {
+        if (check(player, field, x, y)) {
+            goToGameOverScreen(player);
+            return;
         }
 
-        for (let j = 0; j < field[0].length; j++) {
-            for (let i = 0; i < field.length; i++) {
-                current = field[i][j];
-                horizontalItems = current === player ? (horizontalItems + 1) : 0;
-                if (horizontalItems === 4) {
-                    goToGameOverScreen(player);
-                }
-            }
+        if (field.every(a => a.every(el => el !== 0))) {
+            goToGameOverScreen();
         }
-
-        for (let i = 0; i < field.length; i++) {
-            for (let j = 0; j < field[i].length; j++) {
-                if (field[i][j] === 0) {
-                    return;
-                }
-            }
-        }
-        goToGameOverScreen();
     }
 
     function goToGameOverScreen(player) {
@@ -78,14 +55,30 @@ function Game(props) {
                 pathname: "/gameOverScreen",
                 state: { player: getPlayer(player) }
             });
-          }, 500);
+          }, 200);
     }
 
     function getPlayer(id) {
-        if (!id) {
-            return null;
+        return id ? props.location.state.players[id - 1] : null;
+    }
+
+    function count(player, field, x, y, dx, dy) {
+        let count = 0;
+        x += dx;
+        y += dy;
+        while (x >= 0 && x < field[0].length && y >= 0 && y < field.length && field[x][y] === player) {
+            count++;
+            x += dx;
+            y += dy;
         }
-        return props.location.state.players[id - 1];
+        return count;
+    }
+
+    function check(player, field, x, y) {
+        return (count(player, field, x, y, -1, 0) + 1 + count(player, field, x, y, 1, 0)) >= 4
+            || (count(player, field, x, y, 0, -1) + 1 + count(player, field, x, y, 0, 1)) >= 4
+            || (count(player, field, x, y, -1, -1) + 1 + count(player, field, x, y, 1, 1)) >= 4
+            || (count(player, field, x, y, -1, 1) + 1 + count(player, field, x, y, 1, -1)) >= 4;
     }
 }
 

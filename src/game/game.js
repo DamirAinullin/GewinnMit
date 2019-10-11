@@ -1,8 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Redirect } from 'react-router-dom';
 import Field from '../field';
+import axios from 'axios';
 
 function Game(props) {
+    useEffect(function() {
+        setInterval(() => {
+            axios.get('http://localhost:5000').then(function(response) {
+                setField(response.data.field);
+                setPlayer(response.data.player);
+            });
+        }, 2000);
+    }, []);
+
     const [player, setPlayer] = useState(1);
     const [field, setField] = useState([
         [0, 0, 0, 0, 0, 0],
@@ -13,6 +23,7 @@ function Game(props) {
         [0, 0, 0, 0, 0, 0],
         [0, 0, 0, 0, 0, 0]
     ]);
+
 
     if (!props.location.state) {
         return <Redirect to='/' />;
@@ -25,60 +36,33 @@ function Game(props) {
         <Field field={field} player={player} numbers={numbers} onColumnClick={move} />
     </div>;
 
-    function move(columnID, player) {
-        const newField = [...field];
-        const index = newField[columnID].indexOf(0);
-        if (index === -1) {
-            alert('This column already filled. Try to use another one.');
-            return;
-        }
-        newField[columnID][index] = player;
-        setField(newField);
-        setPlayer(player === 1 ? 2 : 1);
-        isGameOver(newField, player, columnID, index);
+    function move(columnID) {
+        axios.post('http://localhost:5000/move', {
+            columnID: columnID
+        }).then(function(response) {
+            setField(response.data.field);
+            isGameOver(response.data);
+        });
     }
 
-    function isGameOver(field, player, x, y) {
-        if (check(player, field, x, y)) {
-            goToGameOverScreen(player);
+    function isGameOver(data) {
+        if (data.isGameOver) {
+            goToGameOverScreen(data.player);
             return;
-        }
-
-        if (field.every(a => a.every(el => el !== 0))) {
-            goToGameOverScreen();
         }
     }
 
-    function goToGameOverScreen(player) {
+    function goToGameOverScreen(id) {
         setTimeout(function () {
-            props.history.push({
-                pathname: "/gameOverScreen",
-                state: { player: getPlayer(player) }
-            });
+            axios.get('http://localhost:5000/player/?id=' + id )
+                .then(response => {
+                    props.history.push({
+                        pathname: "/gameOverScreen",
+                        state: { player: { name: response.data.name } }
+                    });
+                    axios.post('http://localhost:5000/clear', {});
+                });
           }, 200);
-    }
-
-    function getPlayer(id) {
-        return id ? props.location.state.players[id - 1] : null;
-    }
-
-    function count(player, field, x, y, dx, dy) {
-        let count = 0;
-        x += dx;
-        y += dy;
-        while (x >= 0 && x < field[0].length && y >= 0 && y < field.length && field[x][y] === player) {
-            count++;
-            x += dx;
-            y += dy;
-        }
-        return count;
-    }
-
-    function check(player, field, x, y) {
-        return (count(player, field, x, y, -1, 0) + 1 + count(player, field, x, y, 1, 0)) >= 4
-            || (count(player, field, x, y, 0, -1) + 1 + count(player, field, x, y, 0, 1)) >= 4
-            || (count(player, field, x, y, -1, -1) + 1 + count(player, field, x, y, 1, 1)) >= 4
-            || (count(player, field, x, y, -1, 1) + 1 + count(player, field, x, y, 1, -1)) >= 4;
     }
 }
 

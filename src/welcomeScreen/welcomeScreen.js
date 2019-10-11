@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import './welcomeScreen.css';
+import axios from 'axios';
 
 function Welcome() {
   const redirectObj = {
@@ -24,6 +25,7 @@ function Welcome() {
       element.classList.remove('disabled');
       redirectObj.state.players[0].name = name1;
       redirectObj.state.players[1].name = name2;
+      axios.post("http://localhost:5000/players", {players : { "1": name1, "2": name2}});
     }
   }
 
